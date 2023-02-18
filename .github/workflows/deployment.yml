@@ -15,7 +15,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: node-modules-${{ hashFiles('../package-lock.json') }}
+          key: node-modules-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
         run: npm ci
       - name: Test application
@@ -30,22 +30,30 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: node-modeules-${{ hashFiles('../package-lock.json') }}
+          key: node-modeules-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
         run: npm ci
       - name: Lint application
         run: npm run lint
   build:
-    runs-on: ubuntu-latest
-    needs: lint
+    needs: [lint, test]
+    strategy:
+      matrix:
+        node-version: [14, 16]
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Get the repositiry code
         uses: actions/checkout@v3
+      - name: Install Node JSDoc
+        uses: actions/setup-node@v3
+          with:
+            node-version: ${{ matrix.node-version }}
       - name: Cache dependencies
         uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: node-modeules-${{ hashFiles('../package-lock.json') }}
+          key: node-modeules-${{ hashFiles('package-lock.json') }}
       - name: Install dependencies
         run: npm ci
       - name: Build application
